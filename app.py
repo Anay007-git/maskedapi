@@ -3,42 +3,14 @@ import sqlite3
 import os
 from appwrite.client import Client
 from appwrite.services.databases import Databases
+from appwrite.query import Query
 
-app = Flask(__name__)
-
-# Appwrite Configuration
-APPWRITE_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1'
-APPWRITE_PROJECT = '696e1aea003c177c1063'
-APPWRITE_KEY = 'standard_e2da4b633e82866ba75f7db269bbb1185538d073bdc814138cbb4feac106e34181819ace5a98602084d7ad148faba0372263ef16bf38bb169c45c93ba873253e0c3f4b3323f391bde0c6c6c483b872b2edcb4f4d6690f08716a07b0f06a492f3a9d177592b759a70e2fd80558fc2ce3a7e5f9d4299eb6032fd24320c5a8f003a'
-APPWRITE_DB_ID = '696e1b0a001b84affd1c'
-APPWRITE_COLLECTION_ID = 'emp_table'
-
-def get_appwrite_client():
-    client = Client()
-    client.set_endpoint(APPWRITE_ENDPOINT)
-    client.set_project(APPWRITE_PROJECT)
-    client.set_key(APPWRITE_KEY)
-    return client
-
-def mask_field(value):
-    if not value or len(str(value)) <= 2:
-        return '*' * len(str(value)) if value else None
-    return str(value)[:2] + '*' * (len(str(value)) - 2)
-
-@app.route('/')
-def index():
-    return jsonify({
-        "message": "Welcome to the API",
-        "endpoints": [
-            "/appwrite-data",
-            "/employees"
-        ]
-    })
+# ... (rest of configuration)
 
 @app.route('/appwrite-data', methods=['GET', 'POST'])
 def get_appwrite_data():
     try:
-        # Handle POST parameters if needed in future
+        # Handle POST parameters
         if request.method == 'POST':
             try:
                 data = request.get_json(force=True) or {}
@@ -50,13 +22,27 @@ def get_appwrite_data():
         client = get_appwrite_client()
         databases = Databases(client)
         
-        # Mapping for query filters if needed later
-        # For now, just fetching all documents
+        # Build Queries
+        queries = []
         
+        # Map of supported filter keys
+        valid_filters = [
+            'employeeId', 'firstName', 'lastName', 
+            'department', 'fullTime', 'hireDate'
+        ]
+        
+        for key in valid_filters:
+            if data.get(key):
+                queries.append(Query.equal(key, data[key]))
+        
+        # Special handling for Salary (if min/max provided, or exact)
+        if data.get('salary'):
+            queries.append(Query.equal('salary', data['salary']))
+            
         result = databases.list_documents(
             database_id=APPWRITE_DB_ID,
             collection_id=APPWRITE_COLLECTION_ID,
-            queries=[] 
+            queries=queries
         )
         
         documents = result['documents']
