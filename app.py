@@ -35,9 +35,18 @@ def index():
         ]
     })
 
-@app.route('/appwrite-data', methods=['GET'])
+@app.route('/appwrite-data', methods=['GET', 'POST'])
 def get_appwrite_data():
     try:
+        # Handle POST parameters if needed in future
+        if request.method == 'POST':
+            try:
+                data = request.get_json(force=True) or {}
+            except:
+                data = {}
+        else:
+            data = request.args
+            
         client = get_appwrite_client()
         databases = Databases(client)
         
