@@ -27,8 +27,15 @@ def mask_field(value):
         return '*' * len(str(value)) if value else None
     return str(value)[:2] + '*' * (len(str(value)) - 2)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        return jsonify({
+            "error": "Method Not Allowed on Root",
+            "message": "You are sending a POST request to '/'. Did you mean '/appwrite-data'?",
+            "endpoints": ["/appwrite-data"]
+        }), 405
+        
     return jsonify({
         "message": "Welcome to the API",
         "endpoints": [
