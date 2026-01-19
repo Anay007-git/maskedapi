@@ -25,6 +25,16 @@ def mask_field(value):
         return '*' * len(str(value)) if value else None
     return str(value)[:2] + '*' * (len(str(value)) - 2)
 
+@app.route('/')
+def index():
+    return jsonify({
+        "message": "Welcome to the API",
+        "endpoints": [
+            "/appwrite-data",
+            "/employees"
+        ]
+    })
+
 @app.route('/appwrite-data', methods=['GET'])
 def get_appwrite_data():
     try:
