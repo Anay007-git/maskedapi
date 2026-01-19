@@ -38,6 +38,13 @@ def get_appwrite_data():
         # Special handling for Salary (if min/max provided, or exact)
         if data.get('salary'):
             queries.append(Query.equal('salary', data['salary']))
+
+        # Date Range Filtering for hireDate
+        if data.get('hireDateStart'):
+            queries.append(Query.greater_than_equal('hireDate', data['hireDateStart']))
+        
+        if data.get('hireDateEnd'):
+            queries.append(Query.less_than_equal('hireDate', data['hireDateEnd']))
             
         result = databases.list_documents(
             database_id=APPWRITE_DB_ID,
